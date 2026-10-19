@@ -1,0 +1,218 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Acrônimos PT/EN</title>
+<meta name="description" content="Gere mnemônicos: palavras em português e inglês formadas pelas iniciais dos seus termos.">
+<style>
+  :root{
+    --bg:#f6f5f1; --card:#ffffff; --ink:#1d2327; --muted:#667078; --line:#e2e0d8;
+    --accent:#0f6b5c; --accent-ink:#ffffff; --chip:#e8f2ef; --chip-ink:#0b4f44; --warn:#8a5a00;
+    --en:#e9eefb; --en-ink:#2a3f7a;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{ --bg:#14181a; --card:#1c2225; --ink:#e8ecee; --muted:#93a0a7; --line:#2b3438;
+      --accent:#3fb59f; --accent-ink:#0a1a17; --chip:#21352f; --chip-ink:#a9e3d6; --warn:#e0b15a;
+      --en:#222c45; --en-ink:#b9c8f2; }
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+  main{max-width:760px;margin:0 auto;padding:20px 16px 56px}
+  h1{font-size:1.5rem;margin:8px 0 4px}
+  .sub{color:var(--muted);margin:0 0 18px}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px}
+  label.t{display:block;font-weight:600;margin-bottom:6px}
+  textarea{width:100%;min-height:150px;resize:vertical;border:1px solid var(--line);border-radius:10px;
+    background:transparent;color:var(--ink);padding:10px 12px;font:inherit;line-height:1.5}
+  textarea:focus{outline:2px solid var(--accent);outline-offset:1px}
+  .hint{color:var(--muted);font-size:.88rem;margin:8px 0 0}
+  fieldset{border:1px solid var(--line);border-radius:10px;margin:14px 0 0;padding:8px 12px 10px}
+  legend{font-size:.8rem;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;padding:0 6px}
+  .opts{display:flex;flex-wrap:wrap;gap:6px 20px}
+  .opts label{display:flex;gap:8px;align-items:center;font-size:.95rem}
+  select{font:inherit;background:transparent;color:var(--ink);border:1px solid var(--line);border-radius:8px;padding:2px 6px}
+  .row{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px}
+  button{font:inherit;border-radius:10px;padding:10px 18px;border:1px solid var(--line);background:transparent;color:var(--ink);cursor:pointer}
+  button.primary{background:var(--accent);color:var(--accent-ink);border-color:var(--accent);font-weight:600}
+  button:disabled{opacity:.5;cursor:default}
+  #status{margin:18px 2px 8px;color:var(--muted);font-size:.95rem}
+  #status.err{color:var(--warn)}
+  .res{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px 14px;margin:0 0 10px}
+  .word{font-size:1.45rem;font-weight:700;letter-spacing:.02em}
+  .tag{font-size:.72rem;font-weight:600;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);
+    border:1px solid var(--line);border-radius:999px;padding:1px 8px;margin-left:6px;vertical-align:middle;white-space:nowrap}
+  .tag.pt{background:var(--chip);color:var(--chip-ink);border-color:transparent}
+  .tag.en{background:var(--en);color:var(--en-ink);border-color:transparent}
+  .chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+  .chip{background:var(--chip);color:var(--chip-ink);border-radius:8px;padding:3px 9px;font-size:.92rem}
+  .chip b{font-size:1rem;margin-right:5px;text-transform:uppercase}
+  .chip.x{background:transparent;border:1px dashed var(--line);color:var(--muted)}
+  .more{font-size:.85rem;color:var(--muted);margin-top:6px}
+  #more{display:none;width:100%;margin-top:4px}
+</style>
+</head>
+<body>
+<main>
+  <h1>Acrônimos PT / EN</h1>
+  <p class="sub">Digite seus termos e veja quais palavras, em português e inglês, se formam com as iniciais.</p>
+
+  <div class="card">
+    <label class="t" for="in">Termos</label>
+    <textarea id="in" spellcheck="false" placeholder="Febre Calor&#10;Astenia&#10;Mialgia&#10;Odinofagia Dor&#10;Rinorreia"></textarea>
+    <p class="hint">Cada <b>linha</b> é um termo. Na mesma linha, separe por <b>espaço</b> os sinônimos (pode misturar português e inglês): o app tenta a inicial de cada um. Todos os termos entram na palavra, uma letra por termo.</p>
+
+    <fieldset>
+      <legend>Dicionários</legend>
+      <div class="opts">
+        <label><input type="checkbox" id="d-pt" checked> Português</label>
+        <label><input type="checkbox" id="d-en" checked> English</label>
+      </div>
+    </fieldset>
+
+    <fieldset>
+      <legend>Opções</legend>
+      <div class="opts">
+        <label><input type="checkbox" id="ordered"> Respeitar a ordem das linhas</label>
+        <label><input type="checkbox" id="common"> Só palavras comuns</label>
+        <label>Letras extras permitidas
+          <select id="extra"><option value="0">0 (exato)</option><option value="1">até 1</option><option value="2">até 2</option><option value="3">até 3</option></select>
+        </label>
+      </div>
+    </fieldset>
+
+    <div class="row">
+      <button class="primary" id="go">Gerar acrônimos</button>
+      <button id="ex">Exemplo</button>
+      <button id="clr">Limpar</button>
+    </div>
+  </div>
+
+  <div id="status"></div>
+  <div id="out"></div>
+  <button id="more">Mostrar mais</button>
+</main>
+
+<script src="core.js"></script>
+<script src="words_pt.js"></script>
+<script src="words_en.js"></script>
+<script>
+(function () {
+  const $ = (id) => document.getElementById(id);
+  const PAGE = 100;
+  const DICTS = {
+    pt: { box: 'd-pt', data: () => window.WORDS_PT, label: 'Português', index: null },
+    en: { box: 'd-en', data: () => window.WORDS_EN, label: 'English', index: null },
+  };
+  let results = [], shown = 0;
+
+  const esc = (s) => s.replace(/[&<>"']/g, (c) => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+
+  function getIndex(key) {
+    const d = DICTS[key];
+    if (!d.index) {
+      const data = d.data();
+      if (!data) return null;
+      d.index = Acro.buildIndex(data, key);
+    }
+    return d.index;
+  }
+
+  function render(reset) {
+    if (reset) { $('out').innerHTML = ''; shown = 0; }
+    const slice = results.slice(shown, shown + PAGE);
+    const frag = document.createDocumentFragment();
+    for (const r of slice) {
+      const div = document.createElement('div');
+      div.className = 'res';
+      const chips = r.assignment
+        .map((a) => a.term < 0
+          ? `<span class="chip x"><b>${esc(a.letter)}</b></span>`
+          : `<span class="chip"><b>${esc(a.letter)}</b>${esc(a.syns.join(' / '))}</span>`)
+        .join('');
+      div.innerHTML =
+        `<div><span class="word">${esc(r.word)}</span>` +
+        `<span class="tag ${r.lang}">${r.lang.toUpperCase()}</span>` +
+        `<span class="tag">${r.common ? 'comum' : 'dicionário'}</span>` +
+        (r.extra ? `<span class="tag">+${r.extra} extra${r.extra > 1 ? 's' : ''}</span>` : '') +
+        `</div>` +
+        `<div class="chips">${chips}</div>` +
+        (r.count > 1 ? `<div class="more">${r.count >= 5000 ? '5000+' : r.count} formas de associar os termos às letras (mostrada: uma)</div>` : '');
+      frag.appendChild(div);
+    }
+    $('out').appendChild(frag);
+    shown += slice.length;
+    $('more').style.display = shown < results.length ? 'block' : 'none';
+    if (shown < results.length) $('more').textContent = `Mostrar mais (${results.length - shown} restantes)`;
+  }
+
+  function run() {
+    const st = $('status');
+    st.className = '';
+    $('out').innerHTML = ''; $('more').style.display = 'none';
+    const terms = Acro.parseTerms($('in').value);
+    if (terms.length < 2) {
+      st.textContent = 'Digite pelo menos 2 termos (um por linha).';
+      st.className = 'err';
+      return;
+    }
+    if (terms.length > 14) {
+      st.textContent = 'Os dicionários têm palavras de até 14 letras: use no máximo 14 termos.';
+      st.className = 'err';
+      return;
+    }
+    const active = Object.keys(DICTS).filter((k) => $(DICTS[k].box).checked);
+    if (!active.length) {
+      st.textContent = 'Ative pelo menos um dicionário.';
+      st.className = 'err';
+      return;
+    }
+    const indexes = [];
+    for (const k of active) {
+      const ix = getIndex(k);
+      if (!ix) {
+        st.textContent = `Não foi possível carregar o dicionário de ${DICTS[k].label} (arquivo words_${k}.js).`;
+        st.className = 'err';
+        return;
+      }
+      indexes.push(ix);
+    }
+    const extra = parseInt($('extra').value, 10) || 0;
+    results = Acro.search(indexes, terms, {
+      ordered: $('ordered').checked,
+      commonOnly: $('common').checked,
+      extra,
+    });
+    if (!results.length) {
+      st.textContent = `Nenhuma palavra encontrada com ${terms.length} termos.` +
+        ($('common').checked ? ' Tente desmarcar “Só palavras comuns”.' : '') +
+        ($('ordered').checked ? ' Tente desmarcar “Respeitar a ordem”.' : '') +
+        (extra < 3 ? ' Tente permitir letras extras.' : '') +
+        ' Mais sinônimos (principalmente com vogais) aumentam as chances.';
+      st.className = 'err';
+      return;
+    }
+    const by = {};
+    for (const r of results) by[r.lang] = (by[r.lang] || 0) + 1;
+    const parts = active.map((k) => `${k.toUpperCase()} ${by[k] || 0}`).join(' · ');
+    st.textContent = `${results.length} ${results.length === 1 ? 'palavra encontrada' : 'palavras encontradas'} (${parts}).`;
+    render(true);
+  }
+
+  const rerun = () => { if (results.length || $('out').innerHTML || $('status').className === 'err') run(); };
+  $('go').addEventListener('click', run);
+  $('more').addEventListener('click', () => render(false));
+  $('in').addEventListener('keydown', (e) => { if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') run(); });
+  for (const id of ['ordered', 'common', 'extra', 'd-pt', 'd-en']) $(id).addEventListener('change', rerun);
+  $('ex').addEventListener('click', () => {
+    $('in').value = 'Febre Calor\nAstenia\nMialgia\nOdinofagia Dor\nRinorreia';
+    run();
+  });
+  $('clr').addEventListener('click', () => {
+    $('in').value = ''; $('out').innerHTML = ''; $('more').style.display = 'none';
+    results = []; $('status').textContent = ''; $('in').focus();
+  });
+})();
+</script>
+</body>
+</html>
